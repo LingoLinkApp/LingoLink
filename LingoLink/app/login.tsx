@@ -1,37 +1,38 @@
 import {ThemedView} from "@/components/ThemedView";
 import {Text} from "react-native-paper";
-import {useState} from "react";
+import React, {useState} from "react";
 import {LoginFormStyles} from "@/components/login/LoginForm.styles";
 import LoginInputField from "@/components/login/LoginInputField";
 import LoginButton from "@/components/login/LoginButton";
 import RegisterLink from "@/components/login/RegisterLink";
-import React from "react";
-import {useMutation} from "@tanstack/react-query";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {loginUser, registerUser} from "@/src/services/auth.service";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import UserLoginDTO from "@/LingoLink/src/types/userLogin";
+import UserLoginDTO from "@/src/types/userLogin";
+import {ApiLoginResponseOkDTO} from "@/src/types/apiResponse/login/apiLoginResponseOkDTO";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const queryClient = useQueryClient();
   const mutation = useMutation({
       mutationFn: loginUser,
-      onSuccess: async (data) => {
+      onSuccess: async (data: ApiLoginResponseOkDTO) => {
           try {
               await AsyncStorage.setItem(data.data.type, data.data.token);
 
-              if (await AsyncStorage.getItem("bearer")) { // fait une fonction checkauth
-                  console.log("Authentifié");
+              if(await AsyncStorage.getItem("bearer")) { // Fait await AsyncStorage.getItem("bearer") pour checker si ton utilisateur est authentifié, peut etre créer une fonction "checkAuth"
+                  console.log("On est authentifié letsgooooooo");
               }
+          } catch (e) {
 
-          } catch (error) {
-              console.error(error);
           }
       },
-      onError: (error) => {},
-  });
+      onError: (error) => {
 
+      }
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -39,9 +40,10 @@ export default function LoginScreen() {
       const data: UserLoginDTO = {
           email: email,
           password: password,
-      }
+      };
 
       mutation.mutate(data);
+
   }
 
   return (

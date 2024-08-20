@@ -1,51 +1,46 @@
 import {ThemedView} from "@/components/ThemedView";
 import {Text} from "react-native-paper";
-import {useState} from "react";
+import React, {useState} from "react";
 import {RegisterFormStyles} from "@/components/register/RegisterForm.styles";
 import RegisterInputField from "@/components/register/RegisterInputField";
 import RegisterButton from "@/components/register/RegisterButton";
 import LoginLink from "@/components/register/LoginLink";
-import React from "react";
-import {useMutation} from "@tanstack/react-query";
+import {useRegisterForm} from "@/hooks/useRegisterForm";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {registerUser} from "@/src/services/auth.service";
-import UserRegisterDTO from "@/LingoLink/src/types/userRegister";
+import UserRegisterDTO from "@/src/types/userRegister";
 
 export default function RegisterScreen() {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [error, setError] = useState('');
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordConfirm, setPasswordConfirm] = useState('');
+    const { handleRegister} = useRegisterForm();
 
-  const mutation = useMutation({
-      mutationFn: registerUser,
-      onSuccess: (data) => {
-          console.log(data) //Code a executer en cas de success
-      },
-      onError: (error) => {
-          setError("Y A UNE ERREUR") // Code a executer en cas d'erreur
-      },
-  })
+    const mutation = useMutation({
+        mutationFn: registerUser, // Fonction qui est appelé pour fetch
+        onSuccess: (data) => {}, // Si succes, execute le code (data = ce qui est retourné)
+        onError: (error) => {}, // Si erreur, execute le code (error = l'erreur qui est throw)
+    });
 
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
 
-      const data: UserRegisterDTO = {
-          username: username,
-          email: email,
-          password: password,
-          password_confirmation: passwordConfirm,
-      };
+        const data: UserRegisterDTO = {
+            username: username,
+            email: email,
+            password: password,
+            password_confirmation: passwordConfirm,
+        };
 
-      mutation.mutate(data);
-  };
+        mutation.mutate(data);
+    };
 
   return (
     <ThemedView style={RegisterFormStyles.wrapper}>
       <Text variant='displayMedium'>Register</Text>
-      {error && <Text style={{color: 'red'}}>{error}</Text>}
-      <RegisterInputField
+            <RegisterInputField
         label="Username"
         value={username}
         onChangeText={setUsername}
@@ -77,7 +72,7 @@ export default function RegisterScreen() {
         secureTextEntry
         autoCorrect={false}
       />
-      <RegisterButton onPress={handleSubmit}/>
+      <RegisterButton onPress={handleSubmit} />
       <LoginLink/>
     </ThemedView>
   );
