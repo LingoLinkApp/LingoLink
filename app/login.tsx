@@ -16,32 +16,33 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
 
   const mutation = useMutation({
-      mutationFn: loginUser,
-      onSuccess: async (data) => {
-          try {
-              await AsyncStorage.setItem(data.data.type, data.data.token);
+    mutationFn: loginUser,
+    onSuccess: async (data) => {
+      try {
+        await AsyncStorage.setItem(data.data.type, data.data.token);
 
-              if (await AsyncStorage.getItem("bearer")) { // fait une fonction checkauth
-                  console.log("Authentifié");
-              }
+        if (await AsyncStorage.getItem("bearer")) {
+          console.log("Successfully logged in.");
+        }
 
-          } catch (error) {
-              console.error(error);
-          }
-      },
-      onError: (error) => {},
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    onError: (error) => {
+    },
   });
 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
+    e.preventDefault();
 
-      const data: UserLoginDTO = {
-          email: email,
-          password: password,
-      }
+    const data: UserLoginDTO = {
+      email: email,
+      password: password,
+    }
 
-      mutation.mutate(data);
+    mutation.mutate(data);
   }
 
   return (

@@ -18,27 +18,28 @@ export default function RegisterScreen() {
   const [error, setError] = useState('');
 
   const mutation = useMutation({
-      mutationFn: registerUser,
-      onSuccess: (data) => {
-          console.log(data) //Code a executer en cas de success
-      },
-      onError: (error) => {
-          setError("Y A UNE ERREUR") // Code a executer en cas d'erreur
-      },
+    mutationFn: registerUser,
+    onSuccess: (data) => {
+      console.log(data)
+    },
+    onError: (error) => {
+      console.log(error);
+      setError("An error occurred while registering. Please try again.");
+    },
   })
 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
+    e.preventDefault();
 
-      const data: UserRegisterDTO = {
-          username: username,
-          email: email,
-          password: password,
-          password_confirmation: passwordConfirm,
-      };
+    const data: UserRegisterDTO = {
+      username: username,
+      email: email,
+      password: password,
+      password_confirmation: passwordConfirm,
+    };
 
-      mutation.mutate(data);
+    mutation.mutate(data);
   };
 
   return (

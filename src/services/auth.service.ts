@@ -1,22 +1,23 @@
 import UserRegisterDTO from "@/LingoLink/src/types/userRegister";
 import UserLoginDTO from "@/LingoLink/src/types/userLogin";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import {API_URL} from "@/constants/constants";
 
 export const registerUser = async (userInformation: UserRegisterDTO) => {
   const response = await fetch(
-      'http://localhost:3333/api/v1/auth/register',
-      {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userInformation),
-      }
+    `${API_URL}/auth/register`,
+    {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userInformation),
+    }
   )
 
   if (!response.ok) {
-    throw new Error("error");
+    console.log(response);
+    throw new Error("An error occurred while registering. Please try again.");
   }
 
   return await response.json()
@@ -24,14 +25,14 @@ export const registerUser = async (userInformation: UserRegisterDTO) => {
 
 export const loginUser = async (userInformation: UserLoginDTO) => {
   const response = await fetch(
-      'http://localhost:3333/api/v1/auth/login',
-      {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userInformation),
-      }
+    `${API_URL}/auth/login`,
+    {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userInformation),
+    }
   )
 
   if (!response.ok) {
