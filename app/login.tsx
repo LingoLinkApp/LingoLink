@@ -7,34 +7,36 @@ import LoginButton from "@/components/login/LoginButton";
 import RegisterLink from "@/components/login/RegisterLink";
 import React from "react";
 import {useMutation} from "@tanstack/react-query";
-import {loginUser, registerUser} from "@/src/services/auth.service";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import UserLoginDTO from "@/LingoLink/src/types/userLogin";
+import {StorageService} from "@/src/services/storage.service";
+import {UserLoginDTO} from "@/src/types/login/userLoginDTO";
+import {AuthService} from "@/src/services/auth.service";
+import {router} from "expo-router";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const mutation = useMutation({
-    mutationFn: loginUser,
+  const loginMutation = useMutation({
+    mutationFn: AuthService.loginUser,
     onSuccess: async (data) => {
       try {
-        await AsyncStorage.setItem(data.data.type, data.data.token);
+        await StorageService.storeToSecureStorage(data.data.type, data.data.token);
 
-        if (await AsyncStorage.getItem("bearer")) {
+        if (await StorageService.getFromSecureStorage("bearer")) {
           console.log("Successfully logged in.");
+          router.push("/messages");
         }
-
       } catch (error) {
         console.error(error);
       }
     },
     onError: (error) => {
+      console.log(error);
     },
   });
 
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const data: UserLoginDTO = {
@@ -42,7 +44,7 @@ export default function LoginScreen() {
       password: password,
     }
 
-    mutation.mutate(data);
+    loginMutation.mutate(data);
   }
 
   return (
@@ -65,7 +67,7 @@ export default function LoginScreen() {
         secureTextEntry
         autoCorrect={false}
       />
-      <LoginButton onPress={handleSubmit}/>
+      <LoginButton onPress={handleLogin}/>
       <RegisterLink/>
     </ThemedView>
   );

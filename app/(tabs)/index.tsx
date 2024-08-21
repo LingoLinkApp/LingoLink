@@ -2,6 +2,7 @@ import {StyleSheet} from 'react-native';
 import {ThemedView} from "@/components/ThemedView";
 import {Link} from "expo-router";
 import {Button, Text} from "react-native-paper";
+import React from 'react';
 
 export default function HomeScreen() {
   return (
@@ -9,12 +10,12 @@ export default function HomeScreen() {
       <Text variant="displayLarge">LingoLink</Text>
       <ThemedView style={styles.buttonContainer}>
         <Link href="/login" asChild>
-          <Button mode="contained" onPress={() => console.log('Pressed')}>
+          <Button mode="contained">
             Login
           </Button>
         </Link>
         <Link href="/register" asChild>
-          <Button mode="contained" onPress={() => console.log('Pressed')}>
+          <Button mode="contained">
             Register
           </Button>
         </Link>
@@ -22,6 +23,7 @@ export default function HomeScreen() {
     </ThemedView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

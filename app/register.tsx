@@ -7,8 +7,8 @@ import RegisterButton from "@/components/register/RegisterButton";
 import LoginLink from "@/components/register/LoginLink";
 import React from "react";
 import {useMutation} from "@tanstack/react-query";
-import {registerUser} from "@/src/services/auth.service";
-import UserRegisterDTO from "@/LingoLink/src/types/userRegister";
+import {AuthService} from "@/src/services/auth.service";
+import {UserRegisterDTO} from "@/src/types/register/userRegisterDTO";
 
 export default function RegisterScreen() {
   const [username, setUsername] = useState('');
@@ -18,7 +18,7 @@ export default function RegisterScreen() {
   const [error, setError] = useState('');
 
   const mutation = useMutation({
-    mutationFn: registerUser,
+    mutationFn: AuthService.registerUser,
     onSuccess: (data) => {
       console.log(data)
     },
@@ -32,7 +32,8 @@ export default function RegisterScreen() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const data: UserRegisterDTO = {
+    const data: UserRegisterDTO
+      = {
       username: username,
       email: email,
       password: password,
@@ -50,7 +51,7 @@ export default function RegisterScreen() {
         label="Username"
         value={username}
         onChangeText={setUsername}
-        placeholder='@johndoe'
+        placeholder='johndoe'
         autoFocus={true}
         autoCorrect={true}
         textContentType='username'

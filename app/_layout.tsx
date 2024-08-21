@@ -1,33 +1,72 @@
-import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native';
-import {useFonts} from 'expo-font';
-import {Stack} from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import {useEffect} from 'react';
-import 'react-native-reanimated';
-
-import {useColorScheme} from '@/hooks/useColorScheme';
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {SplashScreen, Stack, useRouter} from "expo-router";
+import {useColorScheme} from "react-native";
+import {useEffect, useState} from "react";
+import {useFonts} from "expo-font";
+import {StorageService} from "@/src/services/storage.service";
+import React from "react";
 import {PaperProvider} from "react-native-paper";
-import {QueryClient} from "@tanstack/query-core";
-import {QueryClientProvider} from "@tanstack/react-query";
+import {DarkTheme, DefaultTheme, ThemeProvider} from "@react-navigation/native";
+import {AuthService} from "@/src/services/auth.service";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-const queryClient = new QueryClient()
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
+  const [appIsReady, setAppIsReady] = useState(false);
+  const [hasProfile, setHasProfile] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
+
+  const [fontsLoaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
   useEffect(() => {
-    if (loaded) {
+    async function prepare() {
+      try {
+        // Check if the user is authenticated
+        const token = await StorageService.getFromSecureStorage('bearer');
+
+        if (token) {
+          setIsAuthenticated(true);
+
+          const profile = await AuthService.hasProfile()
+          if (!profile) {
+            // Redirect to profile creation
+            console.log('User does not have a profile');
+          } else {
+            // Redirect to messages
+            setHasProfile(true);
+          }
+        } else {
+          setIsAuthenticated(false);
+        }
+
+        // Once everything is done, set app as ready
+        setAppIsReady(true);
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    prepare();
+  }, []);
+
+  useEffect(() => {
+    if (fontsLoaded && appIsReady) {
+      // Navigate based on authentication status
+      if (isAuthenticated && hasProfile) {
+        router.push('/messages');
+      } else if (isAuthenticated && !hasProfile) {
+        router.push('/profile/create');
+      }
+
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [fontsLoaded, appIsReady, isAuthenticated]);
 
-  if (!loaded) {
+  if (!fontsLoaded || !appIsReady) {
     return null;
   }
 
