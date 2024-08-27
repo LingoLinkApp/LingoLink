@@ -11,6 +11,7 @@ import {StorageService} from "@/src/services/storage.service";
 import {UserLoginDTO} from "@/src/types/login/userLoginDTO";
 import {AuthService} from "@/src/services/auth.service";
 import {router} from "expo-router";
+import {RoutesEnum} from "@/src/constants/routesEnum";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -30,9 +31,9 @@ export default function LoginScreen() {
           // If they don't, redirect to the create profile screen
           const profile = await AuthService.hasProfile();
           if (profile) {
-            router.push("/messages");
+            router.push(RoutesEnum.MESSAGE_ROUTE);
           } else {
-            router.push("/create-profile");
+            router.push(RoutesEnum.CREATE_PROFILE_ROUTE);
           }
         }
       } catch (error) {

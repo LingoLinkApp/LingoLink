@@ -2,7 +2,6 @@ import * as Updates from 'expo-updates';
 import * as Application from 'expo-application';
 import * as Device from 'expo-device';
 
-
 export const config = {
   apiUrl: 'https://api.lingolink.app/api/v1',
   environment: Updates.channel || 'development',

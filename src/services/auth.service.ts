@@ -1,14 +1,15 @@
 import {UserRegisterDTO} from "@/src/types/register/userRegisterDTO";
 import {UserLoginDTO} from "@/src/types/login/userLoginDTO";
 import {StorageService} from "@/src/services/storage.service";
-import {router} from "expo-router";
 import {config} from "@/src/services/context.service";
+import {router} from "expo-router";
+import {ApiRoutesEnum, RoutesEnum} from "@/src/constants/routesEnum";
 
 export abstract class AuthService {
 
   public static registerUser = async (userInformation: UserRegisterDTO) => {
     const response = await fetch(
-      `${config.apiUrl}/auth/register`,
+      `${config.apiUrl}${ApiRoutesEnum.REGISTER_ROUTE}`,
       {
         method: 'POST',
         headers: {
@@ -28,7 +29,7 @@ export abstract class AuthService {
 
   public static loginUser = async (userInformation: UserLoginDTO) => {
     const response = await fetch(
-      `${config.apiUrl}/auth/login`,
+      `${config.apiUrl}${ApiRoutesEnum.LOGIN_ROUTE}`,
       {
         method: 'POST',
         headers: {
@@ -48,7 +49,7 @@ export abstract class AuthService {
   public static logoutUser = async () => {
     try {
       await StorageService.deleteFromSecureStorage("bearer");
-      router.push("/login");
+      router.push(RoutesEnum.LOGIN_ROUTE);
     } catch (e) {
       return false;
     }
@@ -61,7 +62,7 @@ export abstract class AuthService {
   public static hasProfile = async () => {
     try {
       const response = await fetch(
-        `${config.apiUrl}/profile`,
+        `${config.apiUrl}${ApiRoutesEnum.PROFILE_ROUTE}`,
         {
           method: "GET",
           headers: {
@@ -70,11 +71,21 @@ export abstract class AuthService {
         }
       )
 
-      return response.ok;
+      if (!response.ok) {
+        return false;
+      } else {
+        console.log(await response.json());
+        return response.ok;
+      }
 
 
     } catch (e) {
       return false;
     }
+  }
+
+  public static logout = async () => {
+    await StorageService.deleteFromSecureStorage('bearer');
+    router.push(RoutesEnum.LOGIN_ROUTE);
   }
 }
