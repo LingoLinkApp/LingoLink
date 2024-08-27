@@ -19,11 +19,12 @@ const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 Sentry.init({
   dsn: config.sentry.dsn,
   debug: config.sentry.debug,
+  environment: config.environment,
+  release: config.release,
   integrations: [
     new Sentry.ReactNativeTracing({
       routingInstrumentation,
       enableNativeFramesTracking: !isRunningInExpoGo(),
-      // ...
     }),
   ]
 });

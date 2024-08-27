@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 11.0.1"
+    "version": ">= 11.0.1",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -10,10 +11,18 @@
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "autoIncrement": true,
+      "env": {
+        "SENTRY_AUTH_TOKEN": "$SENTRY_AUTH_TOKEN"
+      }
     },
     "production": {
-      "channel": "production"
+      "channel": "production",
+      "autoIncrement": true,
+      "env": {
+        "SENTRY_AUTH_TOKEN": "$SENTRY_AUTH_TOKEN"
+      }
     }
   },
   "submit": {
