@@ -1,5 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
-import AsyncStorageNative from "@react-native-async-storage/async-storage/src/AsyncStorage.native";
+import AsyncStorageNative from '@react-native-async-storage/async-storage';
 
 export abstract class StorageService {
   public static async storeToSecureStorage(key: string, value: string): Promise<void> {

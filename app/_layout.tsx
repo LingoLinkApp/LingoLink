@@ -11,6 +11,7 @@ import {AuthService} from "@/src/services/auth.service";
 import * as Sentry from '@sentry/react-native';
 import {config} from "@/src/services/context.service";
 import {isRunningInExpoGo} from "expo";
+import {RoutesEnum} from "@/src/constants/routesEnum";
 
 const queryClient = new QueryClient();
 
@@ -48,48 +49,48 @@ function RootLayout() {
   });
 
   useEffect(() => {
-    async function prepare() {
+    async function checkAuth() {
       try {
-        // Check if the user is authenticated
         const token = await StorageService.getFromSecureStorage('bearer');
-
         if (token) {
           setIsAuthenticated(true);
-
-          const profile = await AuthService.hasProfile()
-          if (!profile) {
-            // Redirect to profile creation
-            console.log('User does not have a profile');
-          } else {
-            // Redirect to messages
-            setHasProfile(true);
-          }
         } else {
           setIsAuthenticated(false);
         }
-
-        // Once everything is done, set app as ready
         setAppIsReady(true);
       } catch (e) {
         console.warn(e);
       }
     }
 
-    prepare();
+    checkAuth();
   }, []);
 
   useEffect(() => {
-    if (fontsLoaded && appIsReady) {
-      // Navigate based on authentication status
-      if (isAuthenticated && hasProfile) {
-        router.push('/messages');
-      } else if (isAuthenticated && !hasProfile) {
-        router.push('/profile/create');
+    if (isAuthenticated) {
+      async function checkProfile() {
+        try {
+          const profile = await AuthService.hasProfile();
+          setHasProfile(profile);
+        } catch (e) {
+          console.warn(e);
+        }
       }
 
+      checkProfile();
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (fontsLoaded && appIsReady) {
+      if (isAuthenticated && hasProfile) {
+        router.push(RoutesEnum.MESSAGE_ROUTE);
+      } else if (isAuthenticated && !hasProfile) {
+        router.push(RoutesEnum.CREATE_PROFILE_ROUTE);
+      }
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, appIsReady, isAuthenticated]);
+  }, [fontsLoaded, appIsReady, isAuthenticated, hasProfile]);
 
   if (!fontsLoaded || !appIsReady) {
     return null;
@@ -110,4 +111,3 @@ function RootLayout() {
 }
 
 export default Sentry.wrap(RootLayout);
-

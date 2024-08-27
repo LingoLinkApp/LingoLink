@@ -4,7 +4,7 @@ import {AuthService} from "@/src/services/auth.service";
 
 export function useRegisterForm() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleRegister = async ({username, email, password, passwordConfirm}: any) => {
     setLoading(true);
@@ -17,18 +17,23 @@ export function useRegisterForm() {
         throw new Error("Passwords do not match");
       }
 
-      const {isPending, error, data, isFetching} = useQuery({queryKey: ['register'], queryFn: AuthService.register});
+      const {isPending, error, data, isFetching} = useQuery({
+        queryKey: ['register'],
+        queryFn: AuthService.registerUser
+      });
 
       if (isPending) return 'Loading...'
 
       if (error) return 'An error has occurred: ' + error.message
-      
+
       // Simulate an API call
       // await new Promise((resolve) => setTimeout(resolve, 2000));
 
       console.log("User registered:", {username, email, password});
     } catch (error) {
-      setError(error.message);
+      if (error instanceof Error) {
+        setError(error.message);
+      }
     } finally {
       setLoading(false);
     }
