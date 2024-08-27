@@ -1,5 +1,5 @@
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-import {SplashScreen, Stack, useRouter} from "expo-router";
+import {SplashScreen, Stack, useNavigationContainerRef, useRouter} from "expo-router";
 import {useColorScheme} from "react-native";
 import {useEffect, useState} from "react";
 import {useFonts} from "expo-font";
@@ -8,15 +8,39 @@ import React from "react";
 import {PaperProvider} from "react-native-paper";
 import {DarkTheme, DefaultTheme, ThemeProvider} from "@react-navigation/native";
 import {AuthService} from "@/src/services/auth.service";
+import * as Sentry from '@sentry/react-native';
+import {config} from "@/src/services/context.service";
+import {isRunningInExpoGo} from "expo";
 
 const queryClient = new QueryClient();
 
-export default function RootLayout() {
+const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
+
+Sentry.init({
+  dsn: config.sentry.dsn,
+  debug: config.sentry.debug,
+  integrations: [
+    new Sentry.ReactNativeTracing({
+      routingInstrumentation,
+      enableNativeFramesTracking: !isRunningInExpoGo(),
+      // ...
+    }),
+  ]
+});
+
+function RootLayout() {
+  const ref = useNavigationContainerRef();
   const colorScheme = useColorScheme();
   const [appIsReady, setAppIsReady] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (ref) {
+      routingInstrumentation.registerNavigationContainer(ref);
+    }
+  }, [ref]);
 
   const [fontsLoaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -83,3 +107,5 @@ export default function RootLayout() {
     </QueryClientProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);
