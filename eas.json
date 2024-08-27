@@ -14,14 +14,16 @@
       "channel": "preview",
       "autoIncrement": true,
       "env": {
-        "SENTRY_AUTH_TOKEN": "$SENTRY_AUTH_TOKEN"
+        "SENTRY_AUTH_TOKEN": "$SENTRY_AUTH_TOKEN",
+        "SENTRY_DSN": "$SENTRY_DSN"
       }
     },
     "production": {
       "channel": "production",
       "autoIncrement": true,
       "env": {
-        "SENTRY_AUTH_TOKEN": "$SENTRY_AUTH_TOKEN"
+        "SENTRY_AUTH_TOKEN": "$SENTRY_AUTH_TOKEN",
+        "SENTRY_DSN": "$SENTRY_DSN"
       }
     }
   },

@@ -1,5 +1,6 @@
 import * as Updates from 'expo-updates';
 import * as Application from 'expo-application';
+import * as Device from 'expo-device';
 
 
 export const config = {
@@ -19,4 +20,15 @@ if (Updates.channel === 'production') {
 } else if (Updates.channel === 'preview') {
   config.apiUrl = 'https://api.lingolink.app';
   config.sentry.debug = false;
+}
+
+export function getDeviceInfo() {
+  return {
+    appName: Application.applicationName,
+    appVersion: Application.nativeApplicationVersion,
+    deviceName: Device.deviceName,
+    deviceType: Device.deviceType,
+    osName: Device.osName,
+    osVersion: Device.osVersion,
+  };
 }

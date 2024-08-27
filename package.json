@@ -1,7 +1,7 @@
 {
   "name": "lingolink",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -40,7 +40,8 @@
     "expo-secure-store": "~13.0.2",
     "expo-updates": "~0.25.24",
     "@sentry/react-native": "~5.22.0",
-    "expo-application": "~5.9.1"
+    "expo-application": "~5.9.1",
+    "expo-device": "~6.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

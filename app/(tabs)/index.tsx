@@ -19,6 +19,9 @@ export default function HomeScreen() {
             Register
           </Button>
         </Link>
+        <Button mode="contained" onPress={() => {
+          throw new Error('Hello, again, Sentry!');
+        }}>Send Error</Button>
       </ThemedView>
     </ThemedView>
   );
