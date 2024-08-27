@@ -4,7 +4,7 @@ import * as Device from 'expo-device';
 
 
 export const config = {
-  apiUrl: 'https://localhost:3333',
+  apiUrl: 'https://api.lingolink.app/api/v1',
   environment: Updates.channel || 'development',
   release: `${Application.applicationName}@${Application.nativeApplicationVersion}` || '0.0.0',
   sentry: {
@@ -15,10 +15,8 @@ export const config = {
 };
 
 if (Updates.channel === 'production') {
-  config.apiUrl = 'https://api.lingolink.app';
   config.sentry.debug = false;
 } else if (Updates.channel === 'preview') {
-  config.apiUrl = 'https://api.lingolink.app';
   config.sentry.debug = false;
 }
 

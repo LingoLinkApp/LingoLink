@@ -15,12 +15,12 @@ import {isRunningInExpoGo} from "expo";
 const queryClient = new QueryClient();
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
-
 Sentry.init({
   dsn: config.sentry.dsn,
   debug: config.sentry.debug,
   environment: config.environment,
   release: config.release,
+  enabled: config.environment !== 'development',
   integrations: [
     new Sentry.ReactNativeTracing({
       routingInstrumentation,
@@ -110,3 +110,4 @@ function RootLayout() {
 }
 
 export default Sentry.wrap(RootLayout);
+

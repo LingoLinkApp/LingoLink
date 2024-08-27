@@ -24,7 +24,16 @@ export default function LoginScreen() {
 
         if (await StorageService.getFromSecureStorage("bearer")) {
           console.log("Successfully logged in.");
-          router.push("/messages");
+
+          // Check if the user has a profile
+          // If they do, redirect to the messages screen
+          // If they don't, redirect to the create profile screen
+          const profile = await AuthService.hasProfile();
+          if (profile) {
+            router.push("/messages");
+          } else {
+            router.push("/create-profile");
+          }
         }
       } catch (error) {
         console.error(error);
