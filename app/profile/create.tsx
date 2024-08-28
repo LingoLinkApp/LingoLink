@@ -22,11 +22,13 @@ export default function CreateProfileScreen() {
     const fetchProfile = async () => {
       try {
         const profile = await ProfileService.getProfile();
-        const formattedBirthdate = new Date(profile.data.birthdate);
-        setFirstName(profile.data.firstName);
-        setLastName(profile.data.lastName);
-        setBirthdate(formattedBirthdate);
-        setGender(profile.data.gender);
+        if (profile.data) {
+          const formattedBirthdate = new Date(profile.data.birthdate);
+          setFirstName(profile.data.firstName);
+          setLastName(profile.data.lastName);
+          setBirthdate(formattedBirthdate);
+          setGender(profile.data.gender);
+        }
       } catch (error) {
         if (error instanceof Error) {
           console.error(error);
