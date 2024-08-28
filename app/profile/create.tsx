@@ -1,120 +1,172 @@
-import {ThemedView} from "@/components/ThemedView";
-import React, {useEffect, useState} from "react";
-import {Button, Text, TextInput} from "react-native-paper";
-import {Dropdown} from "react-native-paper-dropdown";
-import {DatePickerInput} from "react-native-paper-dates";
-import {useMutation} from "@tanstack/react-query";
-import {StorageService} from "@/src/services/storage.service";
-import {router} from "expo-router";
-import {ProfileService} from "@/src/services/profile.service";
-import {formatDate} from "@/src/utils/dates";
-import {ProfileCreationEnum} from "@/src/constants/profileCreationEnum";
-import {genders} from "@/src/constants/genders";
-import {RoutesEnum} from "@/src/constants/routesEnum";
+import React, { useEffect, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { StorageService } from '@/src/services/storage.service';
+import { ProfileService } from '@/src/services/profile.service';
+import { initializeStepper, resetStepper, goToNextStep, handleBack } from '@/src/utils/stepper';
+import { ThemedView } from '@/components/ThemedView';
+import { ProfileCreationEnum } from '@/src/constants/stepper';
+import { ErrorMessagesEnum } from '@/src/constants/errors';
+import { formatDate } from '@/src/utils/dates';
+import { StepOneComponent } from '@/components/profile/create/StepOneComponent';
+import { StepTwoComponent } from '@/components/profile/create/StepTwoComponent';
+import { StepThreeComponent } from '@/components/profile/create/StepThreeComponent';
+import { StorageKeysEnum } from '@/src/constants/storage';
+import { router } from 'expo-router';
+import { RoutesEnum } from '@/src/constants/routing';
 
 export default function CreateProfileScreen() {
-  const [firstName, setFirstName] = useState<string>('');
-  const [lastName, setLastName] = useState<string>('');
-  const [birthdate, setBirthdate] = useState<Date | undefined>(new Date());
-  const [gender, setGender] = useState<string | null | undefined>('male');
+	const [currentStep, setCurrentStep] = useState(ProfileCreationEnum.STEP_ONE);
+	const [firstName, setFirstName] = useState<string>('');
+	const [lastName, setLastName] = useState<string>('');
+	const [birthdate, setBirthdate] = useState<Date | undefined>(new Date());
+	const [gender, setGender] = useState<string | null | undefined>('male');
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const profile = await ProfileService.getProfile();
-        if (profile.data) {
-          const formattedBirthdate = new Date(profile.data.birthdate);
-          setFirstName(profile.data.firstName);
-          setLastName(profile.data.lastName);
-          setBirthdate(formattedBirthdate);
-          setGender(profile.data.gender);
-        }
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error(error);
-        }
-      }
-    }
-    fetchProfile();
-  }, []);
+	useEffect(() => {
+		const fetchStepAndProfile = async () => {
+			try {
+				// Check if there's a stored step to resume from
+				const storedStep = await StorageService.getFromLocalStorage(ProfileCreationEnum.STEP_NAME);
+				if (storedStep) {
+					setCurrentStep(storedStep as ProfileCreationEnum);
+				}
 
-  const createProfileMutation = useMutation({
-    mutationFn: ProfileService.creationUserProfile,
-    onSuccess: async (data) => {
-      try {
-        if (data.success === false) {
-          return;
-        }
+				const profile = await ProfileService.getProfile();
 
-        await StorageService.storeToLocalStorage('profile', data.data);
-        await StorageService.storeToLocalStorage('create-creation-step', ProfileCreationEnum.STEP_ONE);
+				if (profile.data) {
+					await StorageService.storeToLocalStorage(StorageKeysEnum.PROFILE, profile.data);
+					const formattedBirthdate = new Date(profile.data.birthdate);
+					setFirstName(profile.data.firstName);
+					setLastName(profile.data.lastName);
+					setBirthdate(formattedBirthdate);
+					setGender(profile.data.gender);
+				}
+			} catch (error) {
+				if (error instanceof Error) {
+					console.error(error);
+					throw new Error(ErrorMessagesEnum.FETCH_ERROR, error);
+				}
+			}
+		};
 
-        router.push(RoutesEnum.CREATE_PROFILE_STEP_TWO_ROUTE);
-      } catch (error) {
-        console.error(error);
-        throw new Error("An error occurred while fetching data. Please try again.");
-      }
-    },
-    onError: (error) => {
-      console.error(error);
-      throw new Error("An error occurred while creating the profile. Please try again.");
-    },
-  });
+		initializeStepper();
+		fetchStepAndProfile();
+	}, []);
 
-  const handleProfileCreation = async () => {
-    const data: any = {
-      firstName,
-      lastName,
-      birthdate: formatDate(birthdate),
-      gender
-    }
+	const createProfileMutation = useMutation({
+		mutationFn: ProfileService.creationUserProfile,
+		onSuccess: async (data) => {
+			try {
+				if (data.success === false) {
+					return;
+				}
 
-    createProfileMutation.mutate(data);
-  }
+				await StorageService.storeToLocalStorage(StorageKeysEnum.PROFILE, data.data);
+				await StorageService.storeToLocalStorage(
+					ProfileCreationEnum.STEP_NAME,
+					ProfileCreationEnum.STEP_TWO,
+				);
 
-  return (
-    <ThemedView>
-      <Text variant="displayLarge">Create Profile</Text>
-      <Text variant="displayMedium">Tell us more about yourself</Text>
-      <TextInput mode='outlined'
-                 textContentType={'name'}
-                 label={'First name'}
-                 placeholder={'John'}
-                 value={firstName}
-                 onChangeText={setFirstName}
-                 style={{margin: 16}}
-      />
-      <TextInput mode='outlined'
-                 textContentType={'familyName'}
-                 label={'Last name'}
-                 value={lastName}
-                 onChangeText={setLastName}
-                 placeholder={'Doe'}
-                 style={{margin: 16}}
-      />
-      <ThemedView style={{justifyContent: 'center', flex: 1, alignItems: 'center', margin: 16, marginTop: 32}}>
-        <DatePickerInput
-          locale="en"
-          mode="outlined"
-          label="Birthdate"
-          value={birthdate}
-          onChange={(d) => setBirthdate(d)}
-          inputMode="start"
-          saveLabel="Save"
-          startWeekOnMonday={true}
-          presentationStyle={"pageSheet"}
-        />
-      </ThemedView>
-      <ThemedView style={{margin: 16, marginTop: 64}}>
-        <Dropdown
-          label="Gender"
-          placeholder="Select Gender"
-          options={genders}
-          value={gender!}
-          onSelect={setGender}
-        />
-      </ThemedView>
-      <Button mode='contained' onPress={handleProfileCreation} style={{margin: 16}}>Next</Button>
-    </ThemedView>
-  )
+				// Proceed to the next step
+				await goToNextStep(currentStep, setCurrentStep);
+			} catch (error) {
+				if (error instanceof Error) {
+					console.error(error);
+					throw new Error(ErrorMessagesEnum.FETCH_ERROR, error);
+				}
+			}
+		},
+		onError: (error) => {
+			if (error instanceof Error) {
+				console.error(error);
+				throw new Error(ErrorMessagesEnum.COULD_NOT_CREATE_PROFILE, error);
+			}
+		},
+	});
+
+	const setProfileHasCompletedMutation = useMutation({
+		mutationFn: ProfileService.setCompletedProfile,
+		onSuccess: async (data) => {
+			try {
+				return data.success !== false;
+			} catch (error) {
+				if (error instanceof Error) {
+					console.error(error);
+					throw new Error(ErrorMessagesEnum.FETCH_ERROR, error);
+				}
+			}
+		},
+		onError: (error) => {
+			if (error instanceof Error) {
+				console.error(error);
+				throw new Error(ErrorMessagesEnum.COULD_NOT_SET_PROFILE_COMPLETED, error);
+			}
+		},
+	});
+
+	const handleProfileCreation = async () => {
+		const data: any = {
+			firstName,
+			lastName,
+			birthdate: formatDate(birthdate),
+			gender,
+		};
+
+		createProfileMutation.mutate(data);
+	};
+
+	const handleFinish = async () => {
+		// Get the profile from local storage
+		let profile: any = await StorageService.getFromLocalStorage(StorageKeysEnum.PROFILE);
+		profile = JSON.parse(profile);
+
+		// Use the uuid to set the profile as completed
+		setProfileHasCompletedMutation.mutate(profile.uuid);
+		console.log('Profile has been set as completed');
+
+		// Reset state
+		await resetStepper();
+		setCurrentStep(ProfileCreationEnum.STEP_ONE);
+
+		router.push(RoutesEnum.MESSAGE_ROUTE);
+	};
+
+	const handleResetStepper = async () => {
+		await resetStepper();
+		setCurrentStep(ProfileCreationEnum.STEP_ONE);
+		await StorageService.storeToLocalStorage(
+			ProfileCreationEnum.STEP_NAME,
+			ProfileCreationEnum.STEP_ONE,
+		);
+	};
+
+	return (
+		<ThemedView>
+			{currentStep === ProfileCreationEnum.STEP_ONE && (
+				<StepOneComponent
+					firstName={firstName}
+					lastName={lastName}
+					birthdate={birthdate}
+					gender={gender}
+					setFirstName={setFirstName}
+					setLastName={setLastName}
+					setBirthdate={setBirthdate}
+					setGender={setGender}
+					onNext={() => handleProfileCreation()}
+					onReset={handleResetStepper}
+				/>
+			)}
+			{currentStep === ProfileCreationEnum.STEP_TWO && (
+				<StepTwoComponent
+					onNext={() => goToNextStep(currentStep, setCurrentStep)}
+					onBack={() => handleBack(currentStep, setCurrentStep)}
+				/>
+			)}
+			{currentStep === ProfileCreationEnum.STEP_THREE && (
+				<StepThreeComponent
+					onFinish={handleFinish}
+					onBack={() => handleBack(currentStep, setCurrentStep)}
+				/>
+			)}
+		</ThemedView>
+	);
 }
