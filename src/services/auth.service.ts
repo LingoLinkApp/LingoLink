@@ -59,7 +59,7 @@ export abstract class AuthService {
     return await StorageService.getFromSecureStorage("bearer");
   }
 
-  public static hasProfile = async () => {
+  public static hasCompletedProfile = async () => {
     try {
       const response = await fetch(
         `${config.apiUrl}${ApiRoutesEnum.PROFILE_ROUTE}`,
@@ -74,8 +74,8 @@ export abstract class AuthService {
       if (!response.ok) {
         return false;
       } else {
-        console.log(await response.json());
-        return response.ok;
+        const profile = await response.json();
+        return profile.data.completed;
       }
 
 

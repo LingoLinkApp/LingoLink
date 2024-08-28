@@ -1,5 +1,5 @@
 import {ThemedView} from "@/components/ThemedView";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Button, Text, TextInput} from "react-native-paper";
 import {Dropdown} from "react-native-paper-dropdown";
 import {DatePickerInput} from "react-native-paper-dates";
@@ -7,7 +7,6 @@ import {useMutation} from "@tanstack/react-query";
 import {StorageService} from "@/src/services/storage.service";
 import {router} from "expo-router";
 import {ProfileService} from "@/src/services/profile.service";
-import {AuthService} from "@/src/services/auth.service";
 import {formatDate} from "@/src/utils/dates";
 import {ProfileCreationEnum} from "@/src/constants/profileCreationEnum";
 import {genders} from "@/src/constants/genders";
@@ -19,13 +18,30 @@ export default function CreateProfileScreen() {
   const [birthdate, setBirthdate] = useState<Date | undefined>(new Date());
   const [gender, setGender] = useState<string | null | undefined>('male');
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profile = await ProfileService.getProfile();
+        const formattedBirthdate = new Date(profile.data.birthdate);
+        setFirstName(profile.data.firstName);
+        setLastName(profile.data.lastName);
+        setBirthdate(formattedBirthdate);
+        setGender(profile.data.gender);
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error(error);
+        }
+      }
+    }
+    fetchProfile();
+  }, []);
+
   const createProfileMutation = useMutation({
     mutationFn: ProfileService.creationUserProfile,
     onSuccess: async (data) => {
       try {
         if (data.success === false) {
-          console.error(data);
-          throw new Error("An error occurred while creating the create. Please try again.");
+          return;
         }
 
         await StorageService.storeToLocalStorage('profile', data.data);
@@ -34,10 +50,12 @@ export default function CreateProfileScreen() {
         router.push(RoutesEnum.CREATE_PROFILE_STEP_TWO_ROUTE);
       } catch (error) {
         console.error(error);
+        throw new Error("An error occurred while fetching data. Please try again.");
       }
     },
     onError: (error) => {
-      console.log({context: 'CreateProfileScreen | onError', error});
+      console.error(error);
+      throw new Error("An error occurred while creating the profile. Please try again.");
     },
   });
 
@@ -50,10 +68,6 @@ export default function CreateProfileScreen() {
     }
 
     createProfileMutation.mutate(data);
-  }
-
-  const logout = async () => {
-    await AuthService.logout();
   }
 
   return (
@@ -79,12 +93,14 @@ export default function CreateProfileScreen() {
       <ThemedView style={{justifyContent: 'center', flex: 1, alignItems: 'center', margin: 16, marginTop: 32}}>
         <DatePickerInput
           locale="en"
+          mode="outlined"
           label="Birthdate"
           value={birthdate}
           onChange={(d) => setBirthdate(d)}
           inputMode="start"
+          saveLabel="Save"
+          startWeekOnMonday={true}
           presentationStyle={"pageSheet"}
-
         />
       </ThemedView>
       <ThemedView style={{margin: 16, marginTop: 64}}>
@@ -97,7 +113,6 @@ export default function CreateProfileScreen() {
         />
       </ThemedView>
       <Button mode='contained' onPress={handleProfileCreation} style={{margin: 16}}>Next</Button>
-      <Button mode='contained' onPress={logout} style={{margin: 16}}>Logout</Button>
     </ThemedView>
   )
 }

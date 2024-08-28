@@ -70,8 +70,8 @@ function RootLayout() {
     if (isAuthenticated) {
       async function checkProfile() {
         try {
-          const profile = await AuthService.hasProfile();
-          setHasProfile(profile);
+          const hasCompletedProfile = await AuthService.hasCompletedProfile();
+          setHasProfile(hasCompletedProfile);
         } catch (e) {
           console.warn(e);
         }

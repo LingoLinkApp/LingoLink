@@ -29,7 +29,7 @@ export default function LoginScreen() {
           // Check if the user has a profile
           // If they do, redirect to the messages screen
           // If they don't, redirect to the create profile screen
-          const profile = await AuthService.hasProfile();
+          const profile = await AuthService.hasCompletedProfile();
           if (profile) {
             router.push(RoutesEnum.MESSAGE_ROUTE);
           } else {
