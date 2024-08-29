@@ -13,7 +13,6 @@ import { StorageKeysEnum } from '@/src/constants/storage';
 import { RoutesEnum } from '@/src/constants/routing';
 import { ProfileCreationEnum } from '@/src/constants/stepper';
 import { ErrorMessagesEnum } from '@/src/constants/errors';
-import { CountriesService } from '@/src/services/countries.service';
 import { Genders } from '@/src/constants/genders';
 import { AuthService } from '@/src/services/auth.service';
 
@@ -52,37 +51,9 @@ export default function CreateProfileScreen() {
 			}
 		};
 
-		getCountriesMutation.mutate();
 		initializeStepper();
 		fetchStepAndProfile();
 	}, []);
-
-	const getCountriesMutation = useMutation({
-		mutationFn: CountriesService.getCountries,
-		onSuccess: async (data) => {
-			try {
-				if (data.success === false) {
-					return;
-				}
-
-				await StorageService.storeToLocalStorage(
-					StorageKeysEnum.COUNTRIES,
-					JSON.stringify(data.data),
-				);
-			} catch (error) {
-				if (error instanceof Error) {
-					console.error(error);
-					throw new Error(ErrorMessagesEnum.FETCH_ERROR, error);
-				}
-			}
-		},
-		onError: (error) => {
-			if (error instanceof Error) {
-				console.error(error);
-				throw new Error(ErrorMessagesEnum.COULD_NOT_CREATE_PROFILE, error);
-			}
-		},
-	});
 
 	const createProfileMutation = useMutation({
 		mutationFn: ProfileService.creationUserProfile,

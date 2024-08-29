@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Button, Text } from 'react-native-paper';
 import { ThemedView } from '@/components/ThemedView';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { StorageService } from '@/src/services/storage.service';
-import { StorageKeysEnum } from '@/src/constants/storage';
+import { useMutation } from '@tanstack/react-query';
+import { CountriesService } from '@/src/services/countries.service';
+import { ErrorMessagesEnum } from '@/src/constants/errors';
 
 interface StepTwoComponentProps {
 	onNext: () => void;
@@ -16,31 +17,35 @@ export const StepTwoComponent = ({ setCountry, onNext, onBack }: StepTwoComponen
 	const [value, setValue] = useState(null);
 	const [items, setItems] = useState<any[]>([]);
 
-	const fetchCountries = async () => {
-		const countries = await StorageService.getFromLocalStorage(StorageKeysEnum.COUNTRIES);
-
-		if (countries) {
-			return JSON.parse(countries);
-		}
-
-		return [];
-	};
-	fetchCountries();
-
-	useEffect(() => {
-		const updateItems = async () => {
-			const countries = await fetchCountries();
-			if (countries && Array.isArray(countries)) {
-				// Map countries data to the desired format
-				const countryItems = countries.map((country: any) => ({
+	const getCountriesMutation = useMutation({
+		mutationFn: CountriesService.getCountries,
+		onSuccess: async (data) => {
+			try {
+				if (data.success === false) {
+					return;
+				}
+				const countryItems = data.data.map((country: any) => ({
 					label: country.name.common,
 					value: country.cca2,
 				}));
 				setItems(countryItems);
+			} catch (error) {
+				if (error instanceof Error) {
+					console.error(error);
+					throw new Error(ErrorMessagesEnum.FETCH_ERROR, error);
+				}
 			}
-		};
+		},
+		onError: (error) => {
+			if (error instanceof Error) {
+				console.error(error);
+				throw new Error(ErrorMessagesEnum.COULD_NOT_CREATE_PROFILE, error);
+			}
+		},
+	});
 
-		updateItems();
+	useEffect(() => {
+		getCountriesMutation.mutate();
 	}, []);
 
 	return (

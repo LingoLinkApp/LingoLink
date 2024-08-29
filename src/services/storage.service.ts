@@ -50,4 +50,8 @@ export abstract class StorageService {
 			}
 		}
 	}
+
+	public static async clearLocalStorage(): Promise<void> {
+		await AsyncStorageNative.clear();
+	}
 }
