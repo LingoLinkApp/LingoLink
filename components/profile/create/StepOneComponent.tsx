@@ -4,6 +4,7 @@ import { Dropdown } from 'react-native-paper-dropdown';
 import { DatePickerInput } from 'react-native-paper-dates';
 import { ThemedView } from '@/components/ThemedView';
 import { genders } from '@/src/constants/genders';
+import { enGB, registerTranslation } from 'react-native-paper-dates';
 
 interface StepOneComponentProps {
 	firstName: string;
@@ -30,6 +31,7 @@ export const StepOneComponent = ({
 	onNext,
 	onReset,
 }: StepOneComponentProps) => {
+	registerTranslation('en', enGB);
 	return (
 		<ThemedView>
 			<Text variant="displayLarge">Create Profile</Text>
