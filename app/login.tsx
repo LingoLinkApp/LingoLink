@@ -13,12 +13,20 @@ import { AuthService } from '@/src/services/auth.service';
 import { router } from 'expo-router';
 import { RoutesEnum } from '@/src/constants/routing';
 import { StorageKeysEnum } from '@/src/constants/storage';
+import { data } from '@remix-run/router/utils';
 
 export default function LoginScreen() {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 
-	AuthService.checkIfLoggedIn().then();
+	AuthService.checkIfLoggedIn().then(async (data) => {
+		if (data) {
+			// Check if user has completed profile
+			const hasCompletedProfile = await AuthService.hasCompletedProfile();
+		} else {
+			return;
+		}
+	});
 
 	const loginMutation = useMutation({
 		mutationFn: AuthService.loginUser,

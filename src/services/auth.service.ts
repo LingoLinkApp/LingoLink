@@ -80,8 +80,6 @@ export abstract class AuthService {
 
 	public static async checkIfLoggedIn() {
 		const token = await StorageService.getFromSecureStorage(StorageKeysEnum.BEARER_TOKEN);
-		if (token) {
-			router.push(RoutesEnum.MESSAGE_ROUTE);
-		}
+		return !!token;
 	}
 }
