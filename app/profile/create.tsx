@@ -23,6 +23,7 @@ export default function CreateProfileScreen() {
 	const [birthdate, setBirthdate] = useState<Date | undefined>(new Date());
 	const [country, setCountry] = useState<any | null>(null);
 	const [gender, setGender] = useState<Genders | null | undefined>('male');
+	const [nativeLanguage, setNativeLanguage] = useState<any | null>(null);
 
 	useEffect(() => {
 		const fetchStepAndProfile = async () => {
@@ -201,6 +202,7 @@ export default function CreateProfileScreen() {
 					setCountry={setCountry}
 					onNext={handleStepTwo}
 					onBack={() => handleBack(currentStep, setCurrentStep)}
+					setNativeLanguage={setNativeLanguage}
 				/>
 			)}
 			{currentStep === ProfileCreationEnum.STEP_THREE && (

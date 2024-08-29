@@ -13,4 +13,5 @@ export enum ApiRoutesEnum {
 	REGISTER_ROUTE = '/auth/register',
 	PROFILE_ROUTE = '/profile',
 	COUNTRIES_ROUTE = '/countries',
+	LANGUAGES_ROUTE = '/languages',
 }

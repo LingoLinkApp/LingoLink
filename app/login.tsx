@@ -18,6 +18,8 @@ export default function LoginScreen() {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 
+	AuthService.checkIfLoggedIn().then();
+
 	const loginMutation = useMutation({
 		mutationFn: AuthService.loginUser,
 		onSuccess: async (data) => {

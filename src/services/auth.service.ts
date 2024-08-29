@@ -41,9 +41,9 @@ export abstract class AuthService {
 		return await response.json();
 	};
 
-	public static getBearerToken = async () => {
+	public static async getBearerToken() {
 		return await StorageService.getFromSecureStorage(StorageKeysEnum.BEARER_TOKEN);
-	};
+	}
 
 	public static async getUuid() {
 		const profile = await StorageService.getFromLocalStorage(StorageKeysEnum.PROFILE);
@@ -53,7 +53,7 @@ export abstract class AuthService {
 		return null;
 	}
 
-	public static hasCompletedProfile = async () => {
+	public static async hasCompletedProfile() {
 		try {
 			const response = await fetch(`${config.apiUrl}${ApiRoutesEnum.PROFILE_ROUTE}`, {
 				method: 'GET',
@@ -71,10 +71,17 @@ export abstract class AuthService {
 		} catch (e) {
 			return false;
 		}
-	};
+	}
 
-	public static logout = async () => {
+	public static async logout() {
 		await StorageService.deleteFromSecureStorage(StorageKeysEnum.BEARER_TOKEN);
 		router.push(RoutesEnum.LOGIN_ROUTE);
-	};
+	}
+
+	public static async checkIfLoggedIn() {
+		const token = await StorageService.getFromSecureStorage(StorageKeysEnum.BEARER_TOKEN);
+		if (token) {
+			router.push(RoutesEnum.MESSAGE_ROUTE);
+		}
+	}
 }

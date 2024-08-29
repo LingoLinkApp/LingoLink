@@ -4,7 +4,7 @@ import { ErrorMessagesEnum } from '@/src/constants/errors';
 
 export abstract class LanguagesService {
 	public static async getLanguages() {
-		const response = await fetch(`${config.apiUrl}${ApiRoutesEnum.COUNTRIES_ROUTE}`, {
+		const response = await fetch(`${config.apiUrl}${ApiRoutesEnum.LANGUAGES_ROUTE}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
