@@ -15,7 +15,7 @@ export abstract class ProfileService {
 			body: JSON.stringify(profileInformation),
 		});
 
-		if (response.status !== 201) {
+		if (!response.ok) {
 			console.error(response);
 			throw new Error(ErrorMessagesEnum.REGISTER_ERROR);
 		}
@@ -24,7 +24,9 @@ export abstract class ProfileService {
 	}
 
 	public static async getProfile() {
-		const response = await fetch(`${config.apiUrl}${ApiRoutesEnum.PROFILE_ROUTE}`, {
+		// Get the current user's uuid
+		const uuid = await AuthService.getUuid();
+		const response = await fetch(`${config.apiUrl}${ApiRoutesEnum.PROFILE_ROUTE}/${uuid}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -46,14 +48,14 @@ export abstract class ProfileService {
 		return await response.json();
 	}
 
-	public static async updateProfile(profileInformation: any, uuid: string) {
+	public static async updateProfile(profile: any, uuid: string) {
 		const response = await fetch(`${config.apiUrl}${ApiRoutesEnum.PROFILE_ROUTE}/${uuid}`, {
-			method: 'PUT',
+			method: 'PATCH',
 			headers: {
 				'Content-Type': 'application/json',
 				'Authorization': `Bearer ${await AuthService.getBearerToken()}`,
 			},
-			body: JSON.stringify(profileInformation),
+			body: JSON.stringify(profile),
 		});
 		return await response.json();
 	}

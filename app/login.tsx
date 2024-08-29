@@ -25,13 +25,9 @@ export default function LoginScreen() {
 				await StorageService.storeToSecureStorage(StorageKeysEnum.BEARER_TOKEN, data.data.token);
 
 				if (await StorageService.getFromSecureStorage(StorageKeysEnum.BEARER_TOKEN)) {
-					console.log('Successfully logged in.');
-
-					// Check if the user has a profile
-					// If they do, redirect to the messages screen
-					// If they don't, redirect to the create profile screen
 					const profile = await AuthService.hasCompletedProfile();
 					if (profile) {
+						await StorageService.storeToLocalStorage(StorageKeysEnum.PROFILE, profile.data);
 						router.push(RoutesEnum.MESSAGE_ROUTE);
 					} else {
 						router.push(RoutesEnum.CREATE_PROFILE_ROUTE);

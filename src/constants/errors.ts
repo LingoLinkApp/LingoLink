@@ -6,6 +6,7 @@ export enum ErrorMessagesEnum {
 	NO_DATA_PROVIDED = 'No data provided',
 	COULD_NOT_CREATE_PROFILE = 'An error occurred while creating the profile. Please try again.',
 	COULD_NOT_SET_PROFILE_COMPLETED = 'An error occurred while setting the profile as completed. Please try again.',
+	COULD_NOT_UPDATE_PROFILE = 'An error occurred while updating the profile. Please try again.',
 	INTERNAL_SERVER_ERROR = 'Internal server error.',
 	INVALID_CREDENTIALS = 'Invalid credentials',
 }

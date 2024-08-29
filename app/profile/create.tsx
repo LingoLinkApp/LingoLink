@@ -1,25 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { router } from 'expo-router';
 import { StorageService } from '@/src/services/storage.service';
 import { ProfileService } from '@/src/services/profile.service';
+import { formatDate } from '@/src/utils/dates';
 import { initializeStepper, resetStepper, goToNextStep, handleBack } from '@/src/utils/stepper';
 import { ThemedView } from '@/components/ThemedView';
-import { ProfileCreationEnum } from '@/src/constants/stepper';
-import { ErrorMessagesEnum } from '@/src/constants/errors';
-import { formatDate } from '@/src/utils/dates';
 import { StepOneComponent } from '@/components/profile/create/StepOneComponent';
 import { StepTwoComponent } from '@/components/profile/create/StepTwoComponent';
 import { StepThreeComponent } from '@/components/profile/create/StepThreeComponent';
 import { StorageKeysEnum } from '@/src/constants/storage';
-import { router } from 'expo-router';
 import { RoutesEnum } from '@/src/constants/routing';
+import { ProfileCreationEnum } from '@/src/constants/stepper';
+import { ErrorMessagesEnum } from '@/src/constants/errors';
+import { CountriesService } from '@/src/services/countries.service';
+import { Genders } from '@/src/constants/genders';
+import { AuthService } from '@/src/services/auth.service';
 
 export default function CreateProfileScreen() {
 	const [currentStep, setCurrentStep] = useState(ProfileCreationEnum.STEP_ONE);
 	const [firstName, setFirstName] = useState<string>('');
 	const [lastName, setLastName] = useState<string>('');
 	const [birthdate, setBirthdate] = useState<Date | undefined>(new Date());
-	const [gender, setGender] = useState<string | null | undefined>('male');
+	const [country, setCountry] = useState<any | null>(null);
+	const [gender, setGender] = useState<Genders | null | undefined>('male');
 
 	useEffect(() => {
 		const fetchStepAndProfile = async () => {
@@ -48,9 +52,37 @@ export default function CreateProfileScreen() {
 			}
 		};
 
+		getCountriesMutation.mutate();
 		initializeStepper();
 		fetchStepAndProfile();
 	}, []);
+
+	const getCountriesMutation = useMutation({
+		mutationFn: CountriesService.getCountries,
+		onSuccess: async (data) => {
+			try {
+				if (data.success === false) {
+					return;
+				}
+
+				await StorageService.storeToLocalStorage(
+					StorageKeysEnum.COUNTRIES,
+					JSON.stringify(data.data),
+				);
+			} catch (error) {
+				if (error instanceof Error) {
+					console.error(error);
+					throw new Error(ErrorMessagesEnum.FETCH_ERROR, error);
+				}
+			}
+		},
+		onError: (error) => {
+			if (error instanceof Error) {
+				console.error(error);
+				throw new Error(ErrorMessagesEnum.COULD_NOT_CREATE_PROFILE, error);
+			}
+		},
+	});
 
 	const createProfileMutation = useMutation({
 		mutationFn: ProfileService.creationUserProfile,
@@ -103,6 +135,31 @@ export default function CreateProfileScreen() {
 		},
 	});
 
+	const setCountryMutation = useMutation({
+		mutationFn: ({ profile, uuid }: { profile: any; uuid: string }) =>
+			ProfileService.updateProfile(profile, uuid),
+		onSuccess: async (data) => {
+			try {
+				if (!data.success) {
+					return;
+				} else {
+					return data;
+				}
+			} catch (error) {
+				if (error instanceof Error) {
+					console.error(error);
+					throw new Error(ErrorMessagesEnum.FETCH_ERROR, error);
+				}
+			}
+		},
+		onError: (error) => {
+			if (error instanceof Error) {
+				console.error(error);
+				throw new Error(ErrorMessagesEnum.COULD_NOT_UPDATE_PROFILE, error);
+			}
+		},
+	});
+
 	const handleProfileCreation = async () => {
 		const data: any = {
 			firstName,
@@ -112,6 +169,19 @@ export default function CreateProfileScreen() {
 		};
 
 		createProfileMutation.mutate(data);
+	};
+
+	const handleStepTwo = async () => {
+		const newCountry = {
+			country: {
+				name: country.label,
+				code: country.value,
+			},
+		};
+		const uuid = await AuthService.getUuid();
+		setCountryMutation.mutate({ profile: newCountry, uuid });
+		// Proceed to the next step
+		// await goToNextStep(currentStep, setCurrentStep);
 	};
 
 	const handleFinish = async () => {
@@ -150,14 +220,15 @@ export default function CreateProfileScreen() {
 					setFirstName={setFirstName}
 					setLastName={setLastName}
 					setBirthdate={setBirthdate}
-					setGender={setGender}
+					setGender={(gender: string) => setGender(gender as Genders)}
 					onNext={() => handleProfileCreation()}
 					onReset={handleResetStepper}
 				/>
 			)}
 			{currentStep === ProfileCreationEnum.STEP_TWO && (
 				<StepTwoComponent
-					onNext={() => goToNextStep(currentStep, setCurrentStep)}
+					setCountry={setCountry}
+					onNext={handleStepTwo}
 					onBack={() => handleBack(currentStep, setCurrentStep)}
 				/>
 			)}

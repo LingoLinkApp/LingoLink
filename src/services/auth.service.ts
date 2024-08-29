@@ -41,18 +41,17 @@ export abstract class AuthService {
 		return await response.json();
 	};
 
-	public static logoutUser = async () => {
-		try {
-			await StorageService.deleteFromSecureStorage(StorageKeysEnum.BEARER_TOKEN);
-			router.push(RoutesEnum.LOGIN_ROUTE);
-		} catch (e) {
-			return false;
-		}
-	};
-
 	public static getBearerToken = async () => {
 		return await StorageService.getFromSecureStorage(StorageKeysEnum.BEARER_TOKEN);
 	};
+
+	public static async getUuid() {
+		const profile = await StorageService.getFromLocalStorage(StorageKeysEnum.PROFILE);
+		if (profile) {
+			return JSON.parse(profile).uuid;
+		}
+		return null;
+	}
 
 	public static hasCompletedProfile = async () => {
 		try {
