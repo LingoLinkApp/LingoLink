@@ -15,6 +15,7 @@ import { ProfileCreationEnum } from '@/src/constants/stepper';
 import { ErrorMessagesEnum } from '@/src/constants/errors';
 import { Genders } from '@/src/constants/genders';
 import { AuthService } from '@/src/services/auth.service';
+import { LanguageLevel } from '@/src/constants/languages';
 
 export default function CreateProfileScreen() {
 	const [currentStep, setCurrentStep] = useState(ProfileCreationEnum.STEP_ONE);
@@ -24,6 +25,7 @@ export default function CreateProfileScreen() {
 	const [country, setCountry] = useState<any | null>(null);
 	const [gender, setGender] = useState<Genders | null | undefined>('male');
 	const [nativeLanguage, setNativeLanguage] = useState<any | null>(null);
+	const [nativeLanguageLevel, setNativeLanguageLevel] = useState<LanguageLevel | null>(null);
 
 	useEffect(() => {
 		const fetchStepAndProfile = async () => {
@@ -200,9 +202,10 @@ export default function CreateProfileScreen() {
 			{currentStep === ProfileCreationEnum.STEP_TWO && (
 				<StepTwoComponent
 					setCountry={setCountry}
+					setNativeLanguage={setNativeLanguage}
+					setNativeLanguageLevel={setNativeLanguageLevel}
 					onNext={handleStepTwo}
 					onBack={() => handleBack(currentStep, setCurrentStep)}
-					setNativeLanguage={setNativeLanguage}
 				/>
 			)}
 			{currentStep === ProfileCreationEnum.STEP_THREE && (

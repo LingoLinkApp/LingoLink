@@ -1,23 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { Button, IconButton, MD3Colors, Modal, Portal, Text, useTheme } from 'react-native-paper';
-import { ThemedView } from '@/components/ThemedView';
+import { Button, Modal, Portal, Text, useTheme } from 'react-native-paper';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { View, ScrollView } from 'react-native';
+import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
 import { useMutation } from '@tanstack/react-query';
 import { CountriesService } from '@/src/services/countries.service';
-import { ErrorMessagesEnum } from '@/src/constants/errors';
 import { LanguagesService } from '@/src/services/languages.service';
-import { ThemedText } from '@/components/ThemedText';
+import { languageLevels } from '@/src/constants/languages';
 
 interface StepTwoComponentProps {
 	onNext: () => void;
 	onBack: () => void;
 	setCountry: (country: any) => void;
 	setNativeLanguage: (nativeLanguage: any) => void;
+	setNativeLanguageLevel: (nativeLanguageLevel: any) => void;
 }
 
 export const StepTwoComponent = ({
 	setCountry,
 	setNativeLanguage,
+	setNativeLanguageLevel,
 	onNext,
 	onBack,
 }: StepTwoComponentProps) => {
@@ -32,65 +35,37 @@ export const StepTwoComponent = ({
 	const [nativeLanguageItems, setNativeLanguageItems] = useState<any[]>([]);
 	const [languageModalVisible, setLanguageModalVisible] = useState<boolean>(false);
 
+	const [nativeLanguageLevelOpen, setNativeLanguageLevelOpen] = useState(false);
+	const [nativeLanguageLevelValue, setNativeLanguageLevelValue] = useState<string | null>(null);
+	const [nativeLanguageLevelItems, setNativeLanguageLevelItems] = useState(languageLevels);
+
 	const showLanguageModal = () => setLanguageModalVisible(true);
 	const hideLanguageModal = () => setLanguageModalVisible(false);
-	const containerStyle = { padding: 20 };
 
 	const getCountriesMutation = useMutation({
 		mutationFn: CountriesService.getCountries,
 		onSuccess: async (data) => {
-			try {
-				if (data.success === false) {
-					return;
-				}
-				const countryItems = data.data.map((country: any) => ({
-					label: country.name.common,
-					value: country.cca2,
-				}));
-
-				setCountryItems(countryItems);
-			} catch (error) {
-				if (error instanceof Error) {
-					console.error(error);
-					throw new Error(ErrorMessagesEnum.FETCH_ERROR, error);
-				}
-			}
+			if (!data.success) return;
+			const countryItems = data.data.map((country: any) => ({
+				label: country.name.common,
+				value: country.cca2,
+			}));
+			setCountryItems(countryItems);
 		},
-		onError: (error) => {
-			if (error instanceof Error) {
-				console.error(error);
-				throw new Error(ErrorMessagesEnum.COULD_NOT_CREATE_PROFILE, error);
-			}
-		},
+		onError: (error) => console.error(error),
 	});
 
 	const getLanguagesMutation = useMutation({
 		mutationFn: LanguagesService.getLanguages,
 		onSuccess: async (data) => {
-			try {
-				if (data.success === false) {
-					return;
-				}
-
-				const languageItems = data.data.map((language: any) => ({
-					label: language.name,
-					value: language.name,
-				}));
-
-				setNativeLanguageItems(languageItems);
-			} catch (error) {
-				if (error instanceof Error) {
-					console.error(error);
-					throw new Error(ErrorMessagesEnum.FETCH_ERROR, error);
-				}
-			}
+			if (!data.success) return;
+			const languageItems = data.data.map((language: any) => ({
+				label: language.name,
+				value: language.name,
+			}));
+			setNativeLanguageItems(languageItems);
 		},
-		onError: (error) => {
-			if (error instanceof Error) {
-				console.error(error);
-				throw new Error(ErrorMessagesEnum.COULD_NOT_CREATE_PROFILE, error);
-			}
-		},
+		onError: (error) => console.error(error),
 	});
 
 	useEffect(() => {
@@ -126,20 +101,55 @@ export const StepTwoComponent = ({
 				<Modal
 					visible={languageModalVisible}
 					onDismiss={hideLanguageModal}
-					contentContainerStyle={containerStyle}
+					contentContainerStyle={{ padding: 20, backgroundColor: theme.colors.onBackground }}
 				>
-					<ThemedText>Example Modal. Click outside this area to dismiss.</ThemedText>
-					<DropDownPicker
-						open={nativeLanguageOpen}
-						value={nativeLanguageValue}
-						items={nativeLanguageItems}
-						setOpen={setNativeLanguageOpen}
-						setValue={setNativeLanguageValue}
-						setItems={setNativeLanguageItems}
-						searchable={true}
-						onSelectItem={(nativeLanguage) => setNativeLanguage(nativeLanguage)}
-						placeholder={'Select your native language'}
-					/>
+					<ScrollView>
+						<View>
+							<ThemedText style={{ color: theme.colors.onSecondary }}>
+								Select your native language
+							</ThemedText>
+							<DropDownPicker
+								open={nativeLanguageOpen}
+								value={nativeLanguageValue}
+								items={nativeLanguageItems}
+								setOpen={setNativeLanguageOpen}
+								setValue={setNativeLanguageValue}
+								setItems={setNativeLanguageItems}
+								searchable={true}
+								onSelectItem={(nativeLanguage) => setNativeLanguage(nativeLanguage)}
+								placeholder={'Select your native language'}
+								listMode="MODAL"
+								dropDownDirection="TOP"
+							/>
+						</View>
+						<View style={{ paddingTop: 32 }}>
+							<ThemedText style={{ color: theme.colors.onSecondary }}>Select your level</ThemedText>
+							<DropDownPicker
+								open={nativeLanguageLevelOpen}
+								value={nativeLanguageLevelValue}
+								setValue={setNativeLanguageLevel}
+								items={nativeLanguageLevelItems.map((item) => ({
+									label: item.name,
+									value: item.value,
+									description: item.description,
+								}))}
+								setOpen={setNativeLanguageLevelOpen}
+								setItems={setNativeLanguageLevelItems}
+								searchable={true}
+								placeholder={'Select your level'}
+								listMode="MODAL"
+								dropDownDirection="TOP"
+								renderListItem={({ item }) => (
+									<View style={{ padding: 10 }}>
+										<Text style={{ fontWeight: 'bold', color: '#333', paddingBottom: 8 }}>
+											{item.label}
+										</Text>
+										<Text style={{ color: '#666' }}>{item.description}</Text>
+									</View>
+								)}
+							/>
+						</View>
+					</ScrollView>
 				</Modal>
 			</Portal>
 			<Button mode="contained" onPress={onNext} style={{ margin: 16 }}>
